@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VCS Service And Broadcast Practice</string>
+    <string name="welcome">Welcome</string>
+    <string name="startup_app">Startup Application - Tự động chạy khi máy được bật nguồn</string>
+</resources>

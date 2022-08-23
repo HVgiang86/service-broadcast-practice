@@ -2,4 +2,10 @@
     <string name="app_name">VCS Service And Broadcast Practice</string>
     <string name="welcome">Welcome</string>
     <string name="startup_app">Startup Application - Tự động chạy khi máy được bật nguồn</string>
+    <string name="package_install">Tự động hiện thông báo khi có ứng dụng mới được cài đặt</string>
+    <string name="screen_on">Tự động hiện message thông báo khi màn hình được bật sáng</string>
+    <string name="log_writing">Hiện thông báo điều khiển việc ghi log 5s/lần</string>
+    <string name="running_in_background">Ứng dụng hoạt động dưới nền</string>
+    <string name="channel_name">VCS Service and Broadcast Practice</string>
+    <string name="channel_description">This is my notification channel</string>
 </resources>
