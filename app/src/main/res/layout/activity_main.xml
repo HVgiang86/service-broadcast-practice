@@ -21,7 +21,6 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="32dp"
         />
-
     <ListView
         android:id="@+id/feature_list_listview"
         android:layout_width="match_parent"
