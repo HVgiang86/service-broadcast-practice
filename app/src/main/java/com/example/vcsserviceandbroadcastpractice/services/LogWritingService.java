@@ -16,6 +16,7 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
 import com.example.vcsserviceandbroadcastpractice.R;
+import com.example.vcsserviceandbroadcastpractice.activities.MainActivity;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.LogNotificationBroadcastReceiver;
 
 public class LogWritingService extends Service {
@@ -26,6 +27,9 @@ public class LogWritingService extends Service {
     private final String LOG_TAG = "Log Writing Tag";
     public static final String START_LOG_ACTION = "com.example.vcsserviceandbroadcastpractice.services.START_LOG_ACTION";
     public static final String STOP_LOG_ACTION = "com.example.vcsserviceandbroadcastpractice.services.STOP_LOG_ACTION";
+    public static final String STOP_LOG_SERVICE_ACTION = "com.example.vcsserviceandbroadcastpractice.services.STOP_LOG_SERVICE_ACTION";
+    public static final String REQUIRED_KEY = "com.example.vcsserviceandbroadcastpractice.services.LOG_SERVICE_REQUIRED_KEY";
+
 
     private final Runnable runnable = new Runnable() {
         @Override
@@ -53,8 +57,15 @@ public class LogWritingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent.getStringExtra(REQUIRED_KEY).equals(STOP_LOG_ACTION)) {
+            allowToRun = false;
+        }
+        else if (intent.getStringExtra(REQUIRED_KEY).equals(START_LOG_ACTION)) {
+            allowToRun = true;
+        }
+
         Log.d(LOG_TAG, "Service start command called");
-        allowToRun = true;
+
         handler.post(runnable);
 
         Intent startIntent = new Intent(this, LogNotificationBroadcastReceiver.class);
@@ -65,6 +76,13 @@ public class LogWritingService extends Service {
         stopIntent.setAction(STOP_LOG_ACTION);
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, 0,stopIntent, 0);
 
+        Intent deleteIntent = new Intent(this, LogNotificationBroadcastReceiver.class);
+        stopIntent.setAction(STOP_LOG_SERVICE_ACTION);
+        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(this, 0,deleteIntent, 0);
+
+        Intent contentIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentPendingIntent = PendingIntent.getActivity(this, 0, contentIntent, 0);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
                 .setContentTitle("Logcat Writer")
                 .setContentText("I will write a log to logcat every 5s!")
@@ -73,6 +91,8 @@ public class LogWritingService extends Service {
                 .setAutoCancel(true)
                 .setOngoing(true)
                 .setSilent(true)
+                .setDeleteIntent(deletePendingIntent)
+                .setContentIntent(contentPendingIntent)
                 .setPriority(Notification.PRIORITY_DEFAULT)
                 .addAction(R.drawable.ic_play_icon,"Start",startPendingIntent)
                 .addAction(R.drawable.ic_stop_icon,"Stop",stopPendingIntent)

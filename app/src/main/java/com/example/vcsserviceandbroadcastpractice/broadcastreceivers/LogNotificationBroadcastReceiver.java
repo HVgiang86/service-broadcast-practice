@@ -1,7 +1,9 @@
 package com.example.vcsserviceandbroadcastpractice.broadcastreceivers;
 
+import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.REQUIRED_KEY;
 import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.START_LOG_ACTION;
 import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.STOP_LOG_ACTION;
+import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.STOP_LOG_SERVICE_ACTION;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -21,10 +23,16 @@ public class LogNotificationBroadcastReceiver extends BroadcastReceiver {
         Intent serviceIntent = new Intent(context.getApplicationContext(), LogWritingService.class);
         if (intent.getAction().equals(START_LOG_ACTION)) {
             Log.d(LOG_TAG, "ACTION START RECEIVED");
-            ContextCompat.startForegroundService(context, serviceIntent);
+            serviceIntent.putExtra(REQUIRED_KEY, START_LOG_ACTION);
+            context.startService(serviceIntent);
         }
         else if (intent.getAction().equals(STOP_LOG_ACTION)) {
             Log.d(LOG_TAG, "ACTION STOP RECEIVED");
+            serviceIntent.putExtra(REQUIRED_KEY, STOP_LOG_ACTION);
+            context.startService(serviceIntent);
+        }
+        else if (intent.getAction().equals(STOP_LOG_SERVICE_ACTION)) {
+            Log.d(LOG_TAG, "ACTION STOP SERVICE RECEIVED");
             context.stopService(serviceIntent);
         }
     }
