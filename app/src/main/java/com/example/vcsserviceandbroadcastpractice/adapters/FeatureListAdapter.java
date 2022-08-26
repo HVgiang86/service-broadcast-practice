@@ -1,7 +1,10 @@
 package com.example.vcsserviceandbroadcastpractice.adapters;
 
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.*;
+
 import android.app.Activity;
 import androidx.appcompat.widget.SwitchCompat;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -11,13 +14,10 @@ import android.widget.Toast;
 
 import com.example.vcsserviceandbroadcastpractice.R;
 
+import java.util.Map;
+
 
 public class FeatureListAdapter extends BaseAdapter {
-    public static final String STARTUP_APPLICATION_FEATURE_ID           = "com.example.vcsserviceandbroadcastpractice.STARTUP_APPLICATION";
-    public static final String PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID  = "com.example.vcsserviceandbroadcastpractice.PACKAGE_INSTALL_NOTIFICATION";
-    public static final String SCREEN_ON_NOTIFICATION_FEATURE_ID        = "com.example.vcsserviceandbroadcastpractice.SCREEN_ON_NOTIFICATION";
-    public static final String RUNNING_IN_BACKGROUND_FEATURE_ID         = "com.example.vcsserviceandbroadcastpractice.RUNNING_IN_BACKGROUND";
-    public static final String LOG_WRITING_FEATURE_ID                   = "com.example.vcsserviceandbroadcastpractice.LOG_WRITING";
 
     private final String[] featureIdList = {STARTUP_APPLICATION_FEATURE_ID,
                                             PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID,
@@ -25,9 +25,12 @@ public class FeatureListAdapter extends BaseAdapter {
                                             RUNNING_IN_BACKGROUND_FEATURE_ID,
                                             LOG_WRITING_FEATURE_ID};
 
+    private final Map<String, Boolean> featureState;
+
     private final Activity activity;
 
-    public FeatureListAdapter(Activity activity) {
+    public FeatureListAdapter(Map<String, Boolean> featureState, Activity activity) {
+        this.featureState = featureState;
         this.activity = activity;
     }
 
@@ -53,8 +56,12 @@ public class FeatureListAdapter extends BaseAdapter {
         TextView textView = convertView.findViewById(R.id.feature_tv);
         SwitchCompat switchButton = convertView.findViewById(R.id.feature_sw);
 
-        switchButton.setOnCheckedChangeListener(new OnFeatureCheckedChangeListener(featureIdList[position]));
-        setFeatureNameTextView(textView, featureIdList[position]);
+        String featureId = featureIdList[position];
+        switchButton.setOnCheckedChangeListener(new OnFeatureCheckedChangeListener(featureId));
+        setFeatureNameTextView(textView, featureId);
+
+        boolean state = featureState.get(featureId);
+        switchButton.setChecked(state);
 
         return convertView;
     }
@@ -95,26 +102,8 @@ public class FeatureListAdapter extends BaseAdapter {
 
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            switch (featureId) {
-                case STARTUP_APPLICATION_FEATURE_ID:
-                    Toast.makeText(activity, "Start_up checked change!", Toast.LENGTH_SHORT).show();
-                    break;
-                case PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID:
-                    Toast.makeText(activity, "package installation checked change!", Toast.LENGTH_SHORT).show();
-                    break;
-                case SCREEN_ON_NOTIFICATION_FEATURE_ID:
-                    Toast.makeText(activity, "screen on checked change!", Toast.LENGTH_SHORT).show();
-                    break;
-                case RUNNING_IN_BACKGROUND_FEATURE_ID:
-                    Toast.makeText(activity, "running in background checked change!", Toast.LENGTH_SHORT).show();
-                    break;
-                case LOG_WRITING_FEATURE_ID:
-                    Toast.makeText(activity, "log writing checked change!", Toast.LENGTH_SHORT).show();
-                    break;
-                default:
-                    Toast.makeText(activity, "Wrong chosen!", Toast.LENGTH_SHORT).show();
-                    break;
-            }
+            featureState.remove(featureId);
+            featureState.put(featureId, isChecked);
         }
     }
 }
