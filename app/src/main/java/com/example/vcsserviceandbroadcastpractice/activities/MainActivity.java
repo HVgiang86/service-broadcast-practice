@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         OnNewPackageInstalledBroadcastReceiver broadcastReceiver = new OnNewPackageInstalledBroadcastReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
-
+        intentFilter.addDataScheme("package");
         getApplicationContext().registerReceiver(broadcastReceiver, intentFilter);
 
         LogNotificationBroadcastReceiver notificationBroadcastReceiver = new LogNotificationBroadcastReceiver();

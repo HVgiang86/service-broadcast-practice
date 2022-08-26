@@ -57,12 +57,17 @@ public class LogWritingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getStringExtra(REQUIRED_KEY).equals(STOP_LOG_ACTION)) {
-            allowToRun = false;
+        if (intent.getStringExtra(REQUIRED_KEY) != null) {
+            if (intent.getStringExtra(REQUIRED_KEY).equals(STOP_LOG_ACTION)) {
+                allowToRun = false;
+            }
+            else if (intent.getStringExtra(REQUIRED_KEY).equals(START_LOG_ACTION)) {
+                allowToRun = true;
+            }
         }
-        else if (intent.getStringExtra(REQUIRED_KEY).equals(START_LOG_ACTION)) {
+        else
             allowToRun = true;
-        }
+
 
         Log.d(LOG_TAG, "Service start command called");
 
@@ -88,7 +93,7 @@ public class LogWritingService extends Service {
                 .setContentText("I will write a log to logcat every 5s!")
                 .setTicker("Logcat writer")
                 .setSmallIcon(R.drawable.ic_notification)
-                .setAutoCancel(true)
+                .setAutoCancel(false)
                 .setOngoing(true)
                 .setSilent(true)
                 .setDeleteIntent(deletePendingIntent)
@@ -100,8 +105,8 @@ public class LogWritingService extends Service {
 
         Notification notification = builder.build();
         Log.d(LOG_TAG, "Notification created");
-        startForeground(1, notification);
-        return START_NOT_STICKY;
+        startForeground(101, notification);
+        return START_REDELIVER_INTENT;
     }
 
     @Override
