@@ -45,11 +45,11 @@ public class OnNewPackageInstalledBroadcastReceiver extends BroadcastReceiver {
         Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
         PendingIntent launchPendingIntent = PendingIntent.getActivity(context, 0, launchIntent, 0);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-                .setContentTitle("Logcat Writer")
+                .setContentTitle("New application!")
                 .setContentText(appLabel + " just has been installed!")
                 .setTicker("New application installed")
                 .setSmallIcon(R.drawable.ic_notification)
-                .setAutoCancel(false)
+                .setAutoCancel(true)
                 .setOngoing(false)
                 .setSilent(true)
                 .setContentIntent(launchPendingIntent)

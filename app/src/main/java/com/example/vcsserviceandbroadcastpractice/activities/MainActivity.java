@@ -5,7 +5,6 @@ import static com.example.vcsserviceandbroadcastpractice.services.LogWritingServ
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,13 +12,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ListView;
 
 import com.example.vcsserviceandbroadcastpractice.R;
 import com.example.vcsserviceandbroadcastpractice.adapters.FeatureListAdapter;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.LogNotificationBroadcastReceiver;
+import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.OnBootCompletedBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.OnNewPackageInstalledBroadcastReceiver;
+import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.OnScreenOnBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.services.LogWritingService;
 
 public class MainActivity extends AppCompatActivity {
@@ -49,6 +49,18 @@ public class MainActivity extends AppCompatActivity {
         logIntentFilter.addAction(START_LOG_ACTION);
         logIntentFilter.addAction(STOP_LOG_ACTION);
         registerReceiver(notificationBroadcastReceiver, logIntentFilter);
+
+        OnScreenOnBroadcastReceiver screenOnBroadcastReceiver = new OnScreenOnBroadcastReceiver();
+        IntentFilter intentFilter1 = new IntentFilter();
+        intentFilter1.addAction(Intent.ACTION_SCREEN_ON);
+        getApplicationContext().registerReceiver(screenOnBroadcastReceiver,intentFilter1);
+
+        OnBootCompletedBroadcastReceiver bootCompletedReceiver = new OnBootCompletedBroadcastReceiver();
+        IntentFilter intentFilter2 = new IntentFilter();
+        intentFilter2.addAction(Intent.ACTION_BOOT_COMPLETED);
+        intentFilter2.addAction(Intent.ACTION_REBOOT);
+        getApplicationContext().registerReceiver(bootCompletedReceiver,intentFilter2);
+
 
         Intent serviceIntent = new Intent(this, LogWritingService.class);
         ContextCompat.startForegroundService(this, serviceIntent);
