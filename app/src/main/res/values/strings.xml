@@ -8,4 +8,5 @@
     <string name="running_in_background">Ứng dụng hoạt động dưới nền</string>
     <string name="channel_name">VCS Service and Broadcast Practice</string>
     <string name="channel_description">This is my notification channel</string>
+    <string name="apply_settings_button">Apply</string>
 </resources>

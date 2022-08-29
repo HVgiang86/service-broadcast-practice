@@ -1,7 +1,7 @@
 package com.example.vcsserviceandbroadcastpractice.broadcastreceivers;
 
 
-import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.CHANNEL_ID;
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.NOTIFICATION_CHANNEL_ID;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -17,18 +17,22 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.vcsserviceandbroadcastpractice.R;
 
-public class OnNewPackageInstalledBroadcastReceiver extends BroadcastReceiver {
+
+    //This Broadcast Receiver receive broadcast when new application installed into device
+    //Show an notification to notice user
+public class NewPackageInstalledBroadcastReceiver extends BroadcastReceiver {
     private final String LOG_TAG = "New_Package_Tag";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(LOG_TAG,"New package added action triggered");
+
         if (!intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED)) {
             Log.d(LOG_TAG,"Action not match");
             return;
         }
 
-
+        //Get new application's package name and label
         String pkgName = intent.getData().getSchemeSpecificPart();
         PackageManager pm = context.getPackageManager();
         String appLabel;
@@ -42,8 +46,11 @@ public class OnNewPackageInstalledBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        //Set up a notification
+        //Action tap on notification Intent
         Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
         PendingIntent launchPendingIntent = PendingIntent.getActivity(context, 0, launchIntent, 0);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setContentTitle("New application!")
                 .setContentText(appLabel + " just has been installed!")
@@ -54,8 +61,9 @@ public class OnNewPackageInstalledBroadcastReceiver extends BroadcastReceiver {
                 .setSilent(true)
                 .setContentIntent(launchPendingIntent)
                 .setPriority(Notification.PRIORITY_DEFAULT)
-                .setChannelId(CHANNEL_ID);
+                .setChannelId(NOTIFICATION_CHANNEL_ID);
 
+        //Show notification with id:100
         Notification notification = builder.build();
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.notify(100,notification);

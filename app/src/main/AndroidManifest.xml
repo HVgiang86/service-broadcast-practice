@@ -29,7 +29,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".broadcastreceivers.OnNewPackageInstalledBroadcastReceiver"
+        <receiver android:name=".broadcastreceivers.NewPackageInstalledBroadcastReceiver"
             android:exported="false"
             >
             <intent-filter>
@@ -39,7 +39,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".broadcastreceivers.OnScreenOnBroadcastReceiver"
+        <receiver android:name=".broadcastreceivers.ScreenOnBroadcastReceiver"
             android:exported="false"
             >
             <intent-filter >
@@ -47,7 +47,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".broadcastreceivers.OnBootCompletedBroadcastReceiver"
+        <receiver android:name=".broadcastreceivers.BootCompletedBroadcastReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
             android:exported="true">
             <intent-filter>
@@ -65,7 +65,7 @@
             android:name=".activities.MessageBoxActivity"
             android:exported="false"
             android:noHistory="true"
-            android:theme="@style/Theme.AppCompat.Dialog.Alert" />
+            android:theme="@style/AlertDialog.Activity" />
 
         <activity
             android:name=".activities.MainActivity"
@@ -76,6 +76,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
     </application>
 
 </manifest>

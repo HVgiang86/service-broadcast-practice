@@ -10,15 +10,14 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.vcsserviceandbroadcastpractice.R;
 
 import java.util.Map;
 
-
+//This adapter to display Feature Name and switch button to set on/off state of each feature
 public class FeatureListAdapter extends BaseAdapter {
-
+    //FeatureId stored as string array
     private final String[] featureIdList = {STARTUP_APPLICATION_FEATURE_ID,
                                             PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID,
                                             SCREEN_ON_NOTIFICATION_FEATURE_ID,
@@ -53,14 +52,17 @@ public class FeatureListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = activity.getLayoutInflater().inflate(R.layout.feature_list_item, parent, false);
 
+        //Get instance of TextView and Switch button
         TextView textView = convertView.findViewById(R.id.feature_tv);
         SwitchCompat switchButton = convertView.findViewById(R.id.feature_sw);
 
+        //Set Feature name to textView's text
         String featureId = featureIdList[position];
-        switchButton.setOnCheckedChangeListener(new OnFeatureCheckedChangeListener(featureId));
         setFeatureNameTextView(textView, featureId);
 
+        //Set switch Button's state and checked change listener
         boolean state = featureState.get(featureId);
+        switchButton.setOnCheckedChangeListener(new OnFeatureCheckedChangeListener(featureId));
         switchButton.setChecked(state);
 
         return convertView;
@@ -87,6 +89,7 @@ public class FeatureListAdapter extends BaseAdapter {
             default:
                 break;
         }
+
         textView.setText(resource);
     }
 

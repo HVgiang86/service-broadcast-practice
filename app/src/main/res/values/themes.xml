@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
     <style name="Theme.VCSServiceAndBroadcastPractice" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Primary brand color. -->
@@ -6,5 +6,11 @@
         <item name="colorPrimaryDark">@color/purple_700</item>
         <item name="colorAccent">@color/teal_200</item>
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="AlertDialog.Activity" parent="Theme.MaterialComponents.Dialog">
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
     </style>
 </resources>

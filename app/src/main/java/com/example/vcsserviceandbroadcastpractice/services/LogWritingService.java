@@ -1,6 +1,7 @@
 package com.example.vcsserviceandbroadcastpractice.services;
 
-import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.CHANNEL_ID;
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.NOTIFICATION_CHANNEL_ID;
+
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -84,10 +85,6 @@ public class LogWritingService extends Service {
         stopIntent.setAction(STOP_LOG_ACTION);
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, 0,stopIntent, 0);
 
-        Intent deleteIntent = new Intent(this, LogNotificationBroadcastReceiver.class);
-        stopIntent.setAction(STOP_LOG_SERVICE_ACTION);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(this, 0,deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
         Intent contentIntent = new Intent(this, MainActivity.class);
         PendingIntent contentPendingIntent = PendingIntent.getActivity(this, 0, contentIntent, 0);
 
@@ -99,12 +96,11 @@ public class LogWritingService extends Service {
                 .setAutoCancel(true)
                 .setOngoing(true)
                 .setSilent(true)
-                .setDeleteIntent(deletePendingIntent)
                 .setContentIntent(contentPendingIntent)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .addAction(R.drawable.ic_play_icon,"Start",startPendingIntent)
                 .addAction(R.drawable.ic_stop_icon,"Stop",stopPendingIntent)
-                .setChannelId(CHANNEL_ID);
+                .setChannelId(NOTIFICATION_CHANNEL_ID);
 
         Notification notification = builder.build();
         Log.d(LOG_TAG, "Notification created");

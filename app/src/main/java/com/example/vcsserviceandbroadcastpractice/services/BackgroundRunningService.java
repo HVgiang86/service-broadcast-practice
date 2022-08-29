@@ -42,7 +42,7 @@ public class BackgroundRunningService extends Service {
         return null;
     }
 
-    private void startTurnedOnFeature() {
+   /* private void startTurnedOnFeature() {
         boolean state;
 
         if(featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
@@ -153,5 +153,5 @@ public class BackgroundRunningService extends Service {
                 }
             }
         }
-    }
+    }*/
 }
