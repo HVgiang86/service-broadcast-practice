@@ -65,7 +65,7 @@
             android:exported="false" />
 
         <service
-            android:name=".services.ApplicationAlwaysOnService"
+            android:name=".services.BackgroundRunningService"
             android:exported="true" />
 
         <activity

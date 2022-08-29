@@ -30,15 +30,7 @@ public class LogWritingService extends Service {
 
     public LogWritingService() {
 
-    }    private final Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            if (allowToRun) {
-                Log.d(LOG_TAG, "This log will be sent to logcat every 5 seconds. Current time in seconds: " + System.currentTimeMillis() / 1000);
-                handler.postDelayed(runnable, 5000);
-            }
-        }
-    };
+    }
 
     @Override
     public void onCreate() {
@@ -48,7 +40,15 @@ public class LogWritingService extends Service {
 
         Looper looper = thread.getLooper();
         handler = new Handler(looper);
-    }
+    }    private final Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (allowToRun) {
+                Log.d(LOG_TAG, "This log will be sent to logcat every 5 seconds. Current time in seconds: " + System.currentTimeMillis() / 1000);
+                handler.postDelayed(runnable, 5000);
+            }
+        }
+    };
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -109,6 +109,7 @@ public class LogWritingService extends Service {
         // TODO: Return the communication channel to the service.
         return null;
     }
+
 
 
 

@@ -3,18 +3,22 @@ package com.example.vcsserviceandbroadcastpractice.activities;
 import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.START_LOG_ACTION;
 import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.STOP_LOG_ACTION;
 
+import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -25,6 +29,7 @@ import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.BootComplet
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.LogNotificationBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.NewPackageInstalledBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.ScreenOnBroadcastReceiver;
+import com.example.vcsserviceandbroadcastpractice.services.BackgroundRunningService;
 import com.example.vcsserviceandbroadcastpractice.services.LogWritingService;
 
 import java.util.HashMap;
@@ -45,6 +50,10 @@ public class MainActivity extends AppCompatActivity {
     //Settings about feature on/off is stored in a SharedPreferences file.
     //sharedPreferences file contains string key/boolean value pairs that's feature and its state
     private static final String PREFS_FILE = "MySettingsFile";
+    private SharedPreferences sharedPreferences;
+
+    //This is request code to require System's draw on app permission
+    public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 5469;
 
     //This Map<String, Boolean> used to store feature's on/off state
     //Key is feature's ID and Value is true/false
@@ -55,12 +64,13 @@ public class MainActivity extends AppCompatActivity {
     private final NewPackageInstalledBroadcastReceiver newPackageReceiver = new NewPackageInstalledBroadcastReceiver();
     private final LogNotificationBroadcastReceiver logNotificationBroadcastReceiver = new LogNotificationBroadcastReceiver();
     private final BootCompletedBroadcastReceiver bootCompletedReceiver = new BootCompletedBroadcastReceiver();
-    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        checkPermission();
 
         //Get sharedPreferences that saved on/off state of features
         sharedPreferences = getSharedPreferences(PREFS_FILE, MODE_PRIVATE);
@@ -182,6 +192,16 @@ public class MainActivity extends AppCompatActivity {
     private void startTurnedOnFeature() {
         boolean state;
 
+        //turn on service to keep features running in background
+        if (featureState.containsKey(RUNNING_IN_BACKGROUND_FEATURE_ID)) {
+            state = featureState.get(RUNNING_IN_BACKGROUND_FEATURE_ID);
+            if (state) {
+                Intent serviceIntent = new Intent(this, BackgroundRunningService.class);
+                startService(serviceIntent);
+            }
+        }
+
+        //Turn on new package installed broadcast receiver
         if (featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
             if (state) {
@@ -193,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        //Turn on Log writing service and broadcast receiver
         if (featureState.containsKey(LOG_WRITING_FEATURE_ID)) {
             state = featureState.get(LOG_WRITING_FEATURE_ID);
             if (state) {
@@ -208,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        //Turn on screen on broadcast receiver
         if (featureState.containsKey(SCREEN_ON_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
             if (state) {
@@ -218,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        //Turn on startup app feature
         if (featureState.containsKey(STARTUP_APPLICATION_FEATURE_ID)) {
             state = featureState.get(STARTUP_APPLICATION_FEATURE_ID);
             if (state) {
@@ -234,11 +257,18 @@ public class MainActivity extends AppCompatActivity {
     private void stopTurnedOffFeature() {
         boolean state;
         boolean canBackgroundRunning = false;
+
+        //Turn off running in background
         if (featureState.containsKey(RUNNING_IN_BACKGROUND_FEATURE_ID)) {
             canBackgroundRunning = featureState.get(RUNNING_IN_BACKGROUND_FEATURE_ID);
+            Log.d("Feature Log", "Running in background: " + canBackgroundRunning);
+            if (!canBackgroundRunning) {
+                Intent serviceIntent = new Intent(this, BackgroundRunningService.class);
+                stopService(serviceIntent);
+            }
         }
-        Log.d("Feature Log", "Running in background: " + canBackgroundRunning);
 
+        //Turn off broadcast receiver when new package added
         if (featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
             if (!(state && canBackgroundRunning)) {
@@ -251,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        //Turn off Log writing service and broadcast receiver
         if (featureState.containsKey(LOG_WRITING_FEATURE_ID)) {
             state = featureState.get(LOG_WRITING_FEATURE_ID);
             if (!(state && canBackgroundRunning)) {
@@ -266,6 +297,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        //Turn off screen on broadcast receiver
         if (featureState.containsKey(SCREEN_ON_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
             if (!(state && canBackgroundRunning)) {
@@ -278,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        //Turn off startup app feature
         if (featureState.containsKey(STARTUP_APPLICATION_FEATURE_ID)) {
             state = featureState.get(STARTUP_APPLICATION_FEATURE_ID);
             if (!state) {
@@ -287,6 +320,31 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+
+    //This method will require System's draw on app permission
+    //It is necessary for device running on api 29+ to start activity from a broadcast receiver when boot
+    public void checkPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+            }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
+            if (!Settings.canDrawOverlays(this)) {
+                checkPermission();
             }
         }
     }

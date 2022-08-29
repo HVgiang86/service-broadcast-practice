@@ -1,15 +1,19 @@
 package com.example.vcsserviceandbroadcastpractice.adapters;
 
-import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.*;
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.LOG_WRITING_FEATURE_ID;
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID;
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.RUNNING_IN_BACKGROUND_FEATURE_ID;
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.SCREEN_ON_NOTIFICATION_FEATURE_ID;
+import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.STARTUP_APPLICATION_FEATURE_ID;
 
 import android.app.Activity;
-import androidx.appcompat.widget.SwitchCompat;
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.example.vcsserviceandbroadcastpractice.R;
 
@@ -19,10 +23,10 @@ import java.util.Map;
 public class FeatureListAdapter extends BaseAdapter {
     //FeatureId stored as string array
     private final String[] featureIdList = {STARTUP_APPLICATION_FEATURE_ID,
-                                            PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID,
-                                            SCREEN_ON_NOTIFICATION_FEATURE_ID,
-                                            RUNNING_IN_BACKGROUND_FEATURE_ID,
-                                            LOG_WRITING_FEATURE_ID};
+            PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID,
+            SCREEN_ON_NOTIFICATION_FEATURE_ID,
+            RUNNING_IN_BACKGROUND_FEATURE_ID,
+            LOG_WRITING_FEATURE_ID};
 
     private final Map<String, Boolean> featureState;
 
@@ -92,7 +96,6 @@ public class FeatureListAdapter extends BaseAdapter {
 
         textView.setText(resource);
     }
-
 
 
     //Listener For Feature's Switch Button state changing
