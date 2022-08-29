@@ -21,8 +21,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.vcsserviceandbroadcastpractice.R;
 import com.example.vcsserviceandbroadcastpractice.adapters.FeatureListAdapter;
-import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.LogNotificationBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.BootCompletedBroadcastReceiver;
+import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.LogNotificationBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.NewPackageInstalledBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.ScreenOnBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.services.LogWritingService;
@@ -98,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void applySettings(View view) {
         try {
-            startTurnedOnFeature();
             stopTurnedOffFeature();
+            startTurnedOnFeature();
             Toast.makeText(this, "Successfully!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();

@@ -30,7 +30,6 @@ public class ScreenOnBroadcastReceiver extends BroadcastReceiver {
             Intent openMessageBoxIntent = new Intent(context, MessageBoxActivity.class);
             openMessageBoxIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             openMessageBoxIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            openMessageBoxIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
             try {
                 context.startActivity(openMessageBoxIntent);

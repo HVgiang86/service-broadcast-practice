@@ -8,6 +8,7 @@
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:allowBackup="true"
@@ -29,31 +30,33 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".broadcastreceivers.NewPackageInstalledBroadcastReceiver"
-            android:exported="false"
-            >
+        <receiver
+            android:name=".broadcastreceivers.NewPackageInstalledBroadcastReceiver"
+            android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED"/>
-                <action android:name="android.intent.action.PACKAGE_INSTALL"/>
-                <data android:scheme="package"/>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+
+                <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".broadcastreceivers.ScreenOnBroadcastReceiver"
-            android:exported="false"
-            >
-            <intent-filter >
-                <action android:name="android.intent.action.SCREEN_ON"/>
+        <receiver
+            android:name=".broadcastreceivers.ScreenOnBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.SCREEN_ON" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".broadcastreceivers.BootCompletedBroadcastReceiver"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
-            android:exported="true">
+        <receiver
+            android:name=".broadcastreceivers.BootCompletedBroadcastReceiver"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="android.intent.action.REBOOT"/>
-                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.REBOOT" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
@@ -61,8 +64,13 @@
             android:name=".services.LogWritingService"
             android:exported="false" />
 
+        <service
+            android:name=".services.ApplicationAlwaysOnService"
+            android:exported="true" />
+
         <activity
             android:name=".activities.MessageBoxActivity"
+            android:excludeFromRecents="true"
             android:exported="false"
             android:noHistory="true"
             android:theme="@style/AlertDialog.Activity" />

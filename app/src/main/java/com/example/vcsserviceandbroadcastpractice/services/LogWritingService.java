@@ -2,7 +2,6 @@ package com.example.vcsserviceandbroadcastpractice.services;
 
 import static com.example.vcsserviceandbroadcastpractice.activities.MainActivity.NOTIFICATION_CHANNEL_ID;
 
-
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -21,35 +20,29 @@ import com.example.vcsserviceandbroadcastpractice.activities.MainActivity;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.LogNotificationBroadcastReceiver;
 
 public class LogWritingService extends Service {
-    private Handler handler;
-
-    private boolean allowToRun = false;
-
-    private final String LOG_TAG = "Log Writing Tag";
     public static final String START_LOG_ACTION = "com.example.vcsserviceandbroadcastpractice.services.START_LOG_ACTION";
     public static final String STOP_LOG_ACTION = "com.example.vcsserviceandbroadcastpractice.services.STOP_LOG_ACTION";
-    public static final String STOP_LOG_SERVICE_ACTION = "com.example.vcsserviceandbroadcastpractice.services.STOP_LOG_SERVICE_ACTION";
     public static final String REQUIRED_KEY = "com.example.vcsserviceandbroadcastpractice.services.LOG_SERVICE_REQUIRED_KEY";
+    private final String LOG_TAG = "Log Writing Tag";
+    private Handler handler;
+    private boolean allowToRun = false;
 
 
-    private final Runnable runnable = new Runnable() {
+    public LogWritingService() {
+
+    }    private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
             if (allowToRun) {
-                Log.d(LOG_TAG, "This log will be sent to logcat every 5 seconds. Current time in seconds: " + System.currentTimeMillis()/1000);
+                Log.d(LOG_TAG, "This log will be sent to logcat every 5 seconds. Current time in seconds: " + System.currentTimeMillis() / 1000);
                 handler.postDelayed(runnable, 5000);
             }
         }
     };
 
-
-    public LogWritingService() {
-
-    }
-
     @Override
     public void onCreate() {
-        Log.d(LOG_TAG,"Log Service onCreate() called!");
+        Log.d(LOG_TAG, "Log Service onCreate() called!");
         HandlerThread thread = new HandlerThread("LogWritingServiceStart", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
 
@@ -60,12 +53,8 @@ public class LogWritingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getStringExtra(REQUIRED_KEY) != null) {
-            if (intent.getStringExtra(REQUIRED_KEY).equals(STOP_LOG_ACTION))
-                allowToRun = false;
-            else
-                allowToRun = true;
-        }
-        else {
+            allowToRun = !intent.getStringExtra(REQUIRED_KEY).equals(STOP_LOG_ACTION);
+        } else {
             allowToRun = true;
         }
 
@@ -73,7 +62,6 @@ public class LogWritingService extends Service {
             handler.removeCallbacks(runnable);
             handler.post(runnable);
         }
-
 
         Log.d(LOG_TAG, "Service start command called");
 
@@ -83,7 +71,7 @@ public class LogWritingService extends Service {
 
         Intent stopIntent = new Intent(this, LogNotificationBroadcastReceiver.class);
         stopIntent.setAction(STOP_LOG_ACTION);
-        PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, 0,stopIntent, 0);
+        PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, 0, stopIntent, 0);
 
         Intent contentIntent = new Intent(this, MainActivity.class);
         PendingIntent contentPendingIntent = PendingIntent.getActivity(this, 0, contentIntent, 0);
@@ -97,9 +85,9 @@ public class LogWritingService extends Service {
                 .setOngoing(true)
                 .setSilent(true)
                 .setContentIntent(contentPendingIntent)
-                .setPriority(Notification.PRIORITY_HIGH)
-                .addAction(R.drawable.ic_play_icon,"Start",startPendingIntent)
-                .addAction(R.drawable.ic_stop_icon,"Stop",stopPendingIntent)
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .addAction(R.drawable.ic_play_icon, "Start", startPendingIntent)
+                .addAction(R.drawable.ic_stop_icon, "Stop", stopPendingIntent)
                 .setChannelId(NOTIFICATION_CHANNEL_ID);
 
         Notification notification = builder.build();
@@ -116,11 +104,12 @@ public class LogWritingService extends Service {
         stopSelf();
     }
 
-
-
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         return null;
     }
+
+
+
 }
