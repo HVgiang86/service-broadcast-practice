@@ -58,7 +58,7 @@ public class LogWritingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getStringExtra(REQUIRED_KEY) != null) {
+        if (intent != null && intent.getStringExtra(REQUIRED_KEY) != null) {
             if (intent.getStringExtra(REQUIRED_KEY).equals(STOP_LOG_ACTION))
                 allowToRun = false;
             else
@@ -101,7 +101,7 @@ public class LogWritingService extends Service {
                 .setSilent(true)
                 .setDeleteIntent(deletePendingIntent)
                 .setContentIntent(contentPendingIntent)
-                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setPriority(Notification.PRIORITY_HIGH)
                 .addAction(R.drawable.ic_play_icon,"Start",startPendingIntent)
                 .addAction(R.drawable.ic_stop_icon,"Stop",stopPendingIntent)
                 .setChannelId(CHANNEL_ID);
@@ -109,7 +109,7 @@ public class LogWritingService extends Service {
         Notification notification = builder.build();
         Log.d(LOG_TAG, "Notification created");
         startForeground(101, notification);
-        return START_REDELIVER_INTENT;
+        return START_STICKY;
     }
 
     @Override

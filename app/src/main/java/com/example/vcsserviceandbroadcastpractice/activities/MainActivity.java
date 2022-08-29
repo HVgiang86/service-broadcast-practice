@@ -5,6 +5,7 @@ import static com.example.vcsserviceandbroadcastpractice.services.LogWritingServ
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,6 +14,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ListView;
 
 import com.example.vcsserviceandbroadcastpractice.R;
@@ -38,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREFS_FILE = "MySettingsFile";
     private SharedPreferences sharedPreferences;
 
+    private final OnScreenOnBroadcastReceiver screenOnBroadcastReceiver = new OnScreenOnBroadcastReceiver();
+    private final OnNewPackageInstalledBroadcastReceiver newPackageReceiver = new OnNewPackageInstalledBroadcastReceiver();
+    private final LogNotificationBroadcastReceiver logNotificationBroadcastReceiver = new LogNotificationBroadcastReceiver();
+    private final OnBootCompletedBroadcastReceiver bootCompletedReceiver = new OnBootCompletedBroadcastReceiver();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
 
         //Get sharedPreferences that saved on/off state of features
         sharedPreferences = getSharedPreferences(PREFS_FILE,MODE_PRIVATE);
+        if (sharedPreferences == null)
+            Log.d("Shared Preferences Tag","saved file unavailable!");
 
         //Get state of each feature from sharedPreferences
         getSavedSettings(sharedPreferences);
@@ -58,15 +67,22 @@ public class MainActivity extends AppCompatActivity {
         //API level 29 and higher required it for notification to work correctly
         createNotificationChannel();
 
+
+
         //
         startTurnedOnFeature();
+    }
+
+    @Override
+    protected void onStop() {
+        saveSettings(sharedPreferences);
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         stopTurnedOffFeature();
         super.onDestroy();
-        saveSettings(sharedPreferences);
     }
 
     private void getSavedSettings(SharedPreferences sharedPreferences) {
@@ -94,29 +110,35 @@ public class MainActivity extends AppCompatActivity {
         if(featureState.containsKey(RUNNING_IN_BACKGROUND_FEATURE_ID)) {
             state = featureState.get(RUNNING_IN_BACKGROUND_FEATURE_ID);
             editor.putBoolean(RUNNING_IN_BACKGROUND_FEATURE_ID, state);
+            Log.d("Shared Preferences Tag","Running in background saved: " + state);
         }
 
         if(featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
             editor.putBoolean(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID, state);
+            Log.d("Shared Preferences Tag","pakage added saved: " + state);
         }
 
         if(featureState.containsKey(LOG_WRITING_FEATURE_ID)) {
             state = featureState.get(LOG_WRITING_FEATURE_ID);
             editor.putBoolean(LOG_WRITING_FEATURE_ID, state);
+            Log.d("Shared Preferences Tag","log writing saved: " + state);
         }
 
         if(featureState.containsKey(SCREEN_ON_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
             editor.putBoolean(SCREEN_ON_NOTIFICATION_FEATURE_ID, state);
+            Log.d("Shared Preferences Tag","screen on saved: " + state);
         }
 
         if(featureState.containsKey(STARTUP_APPLICATION_FEATURE_ID)) {
             state = featureState.get(STARTUP_APPLICATION_FEATURE_ID);
             editor.putBoolean(STARTUP_APPLICATION_FEATURE_ID, state);
+            Log.d("Shared Preferences Tag","startup app saved: " + state);
         }
 
         editor.apply();
+        Log.d("Shared Preferences Tag","saved file unavailable!");
     }
 
     private void createNotificationChannel() {
@@ -141,46 +163,48 @@ public class MainActivity extends AppCompatActivity {
         if(featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
             if (state) {
-                OnNewPackageInstalledBroadcastReceiver broadcastReceiver = new OnNewPackageInstalledBroadcastReceiver();
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
                 intentFilter.addDataScheme("package");
-                getApplicationContext().registerReceiver(broadcastReceiver, intentFilter);
+                registerReceiver(newPackageReceiver, intentFilter);
+                Log.d("Feature Log","New Package Added Turned On!");
             }
         }
 
         if(featureState.containsKey(LOG_WRITING_FEATURE_ID)) {
             state = featureState.get(LOG_WRITING_FEATURE_ID);
             if (state) {
-                LogNotificationBroadcastReceiver notificationBroadcastReceiver = new LogNotificationBroadcastReceiver();
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(START_LOG_ACTION);
                 intentFilter.addAction(STOP_LOG_ACTION);
-                registerReceiver(notificationBroadcastReceiver, intentFilter);
+                LocalBroadcastManager.getInstance(this).registerReceiver(logNotificationBroadcastReceiver, intentFilter);
 
                 Intent serviceIntent = new Intent(this, LogWritingService.class);
                 ContextCompat.startForegroundService(this, serviceIntent);
+
+                Log.d("Feature Log","Log Writing Turned On!");
             }
         }
 
         if(featureState.containsKey(SCREEN_ON_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
             if (state) {
-                OnScreenOnBroadcastReceiver screenOnBroadcastReceiver = new OnScreenOnBroadcastReceiver();
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(Intent.ACTION_SCREEN_ON);
-                getApplicationContext().registerReceiver(screenOnBroadcastReceiver,intentFilter);
+                registerReceiver(screenOnBroadcastReceiver,intentFilter);
+                Log.d("Feature Log","Screen On Message Box Turned On!");
             }
         }
 
         if(featureState.containsKey(STARTUP_APPLICATION_FEATURE_ID)) {
             state = featureState.get(STARTUP_APPLICATION_FEATURE_ID);
             if (state) {
-                OnBootCompletedBroadcastReceiver bootCompletedReceiver = new OnBootCompletedBroadcastReceiver();
+
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(Intent.ACTION_BOOT_COMPLETED);
                 intentFilter.addAction(Intent.ACTION_REBOOT);
-                getApplicationContext().registerReceiver(bootCompletedReceiver,intentFilter);
+                registerReceiver(bootCompletedReceiver,intentFilter);
+                Log.d("Feature Log","Startup App Turned On!");
             }
         }
     }
@@ -188,43 +212,60 @@ public class MainActivity extends AppCompatActivity {
     private void stopTurnedOffFeature() {
         boolean state;
         boolean canBackgroundRunning = false;
-
+        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
         if(featureState.containsKey(RUNNING_IN_BACKGROUND_FEATURE_ID)) {
             canBackgroundRunning = featureState.get(RUNNING_IN_BACKGROUND_FEATURE_ID);
         }
+        Log.d("Feature Log","Running in background: " + canBackgroundRunning);
 
         if(featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
-            if (state && canBackgroundRunning) {
-                OnNewPackageInstalledBroadcastReceiver broadcastReceiver = new OnNewPackageInstalledBroadcastReceiver();
-                unregisterReceiver(broadcastReceiver);
+            if (!(state && canBackgroundRunning)) {
+                try {
+                    unregisterReceiver(newPackageReceiver);
+                    Log.d("Feature Log","New package added Turned Off!");
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         if(featureState.containsKey(LOG_WRITING_FEATURE_ID)) {
             state = featureState.get(LOG_WRITING_FEATURE_ID);
-            if (state && canBackgroundRunning) {
-                LogNotificationBroadcastReceiver notificationBroadcastReceiver = new LogNotificationBroadcastReceiver();
-                unregisterReceiver(notificationBroadcastReceiver);
+            if (!(state && canBackgroundRunning)) {
+                try {
+                    LocalBroadcastManager.getInstance(this).unregisterReceiver(logNotificationBroadcastReceiver);
 
-                Intent serviceIntent = new Intent(this, LogWritingService.class);
-                stopService(serviceIntent);
+                    Intent serviceIntent = new Intent(this, LogWritingService.class);
+                    stopService(serviceIntent);
+                    Log.d("Feature Log","Log writing Turned Off!");
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         if(featureState.containsKey(SCREEN_ON_NOTIFICATION_FEATURE_ID)) {
             state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
-            if (state && canBackgroundRunning) {
-                OnScreenOnBroadcastReceiver screenOnBroadcastReceiver = new OnScreenOnBroadcastReceiver();
-                unregisterReceiver(screenOnBroadcastReceiver);
+            if (!(state && canBackgroundRunning)) {
+                try {
+                    unregisterReceiver(screenOnBroadcastReceiver);
+                    Log.d("Feature Log","Screen on Turned Off!");
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         if(featureState.containsKey(STARTUP_APPLICATION_FEATURE_ID)) {
             state = featureState.get(STARTUP_APPLICATION_FEATURE_ID);
-            if (state && canBackgroundRunning) {
-                OnBootCompletedBroadcastReceiver bootCompletedReceiver = new OnBootCompletedBroadcastReceiver();
-                unregisterReceiver(bootCompletedReceiver);
+            if (!state) {
+                try {
+                    unregisterReceiver(bootCompletedReceiver);
+                    Log.d("Feature Log","startup app Turned Off!");
+                } catch (IllegalArgumentException  e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
