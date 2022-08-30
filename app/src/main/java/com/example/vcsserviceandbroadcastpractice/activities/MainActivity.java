@@ -1,7 +1,5 @@
 package com.example.vcsserviceandbroadcastpractice.activities;
 
-import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.START_LOG_ACTION;
-import static com.example.vcsserviceandbroadcastpractice.services.LogWritingService.STOP_LOG_ACTION;
 
 import android.annotation.TargetApi;
 import android.app.NotificationChannel;
@@ -21,14 +19,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.vcsserviceandbroadcastpractice.R;
 import com.example.vcsserviceandbroadcastpractice.adapters.FeatureListAdapter;
 import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.BootCompletedBroadcastReceiver;
-import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.LogNotificationBroadcastReceiver;
-import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.NewPackageInstalledBroadcastReceiver;
-import com.example.vcsserviceandbroadcastpractice.broadcastreceivers.ScreenOnBroadcastReceiver;
 import com.example.vcsserviceandbroadcastpractice.services.BackgroundRunningService;
 import com.example.vcsserviceandbroadcastpractice.services.LogWritingService;
 
@@ -55,15 +49,12 @@ public class MainActivity extends AppCompatActivity {
     //This is request code to require System's draw on app permission
     public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 5469;
 
+
+    private final BootCompletedBroadcastReceiver bootCompletedReceiver = new BootCompletedBroadcastReceiver();
+
     //This Map<String, Boolean> used to store feature's on/off state
     //Key is feature's ID and Value is true/false
     private final Map<String, Boolean> featureState = new HashMap<>();
-
-    //instance of Broadcast Receiver used for features
-    private final ScreenOnBroadcastReceiver screenOnBroadcastReceiver = new ScreenOnBroadcastReceiver();
-    private final NewPackageInstalledBroadcastReceiver newPackageReceiver = new NewPackageInstalledBroadcastReceiver();
-    private final LogNotificationBroadcastReceiver logNotificationBroadcastReceiver = new LogNotificationBroadcastReceiver();
-    private final BootCompletedBroadcastReceiver bootCompletedReceiver = new BootCompletedBroadcastReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,57 +183,10 @@ public class MainActivity extends AppCompatActivity {
     private void startTurnedOnFeature() {
         boolean state;
 
-        //turn on service to keep features running in background
-        if (featureState.containsKey(RUNNING_IN_BACKGROUND_FEATURE_ID)) {
-            state = featureState.get(RUNNING_IN_BACKGROUND_FEATURE_ID);
-            if (state) {
-                Intent serviceIntent = new Intent(this, BackgroundRunningService.class);
-                startService(serviceIntent);
-            }
-        }
-
-        //Turn on new package installed broadcast receiver
-        if (featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
-            state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
-            if (state) {
-                IntentFilter intentFilter = new IntentFilter();
-                intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
-                intentFilter.addDataScheme("package");
-                registerReceiver(newPackageReceiver, intentFilter);
-                Log.d("Feature Log", "New Package Added Turned On!");
-            }
-        }
-
-        //Turn on Log writing service and broadcast receiver
-        if (featureState.containsKey(LOG_WRITING_FEATURE_ID)) {
-            state = featureState.get(LOG_WRITING_FEATURE_ID);
-            if (state) {
-                IntentFilter intentFilter = new IntentFilter();
-                intentFilter.addAction(START_LOG_ACTION);
-                intentFilter.addAction(STOP_LOG_ACTION);
-                LocalBroadcastManager.getInstance(this).registerReceiver(logNotificationBroadcastReceiver, intentFilter);
-
-                Intent serviceIntent = new Intent(this, LogWritingService.class);
-                ContextCompat.startForegroundService(this, serviceIntent);
-
-                Log.d("Feature Log", "Log Writing Turned On!");
-            }
-        }
-
-        //Turn on screen on broadcast receiver
-        if (featureState.containsKey(SCREEN_ON_NOTIFICATION_FEATURE_ID)) {
-            state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
-            if (state) {
-                IntentFilter intentFilter = new IntentFilter();
-                intentFilter.addAction(Intent.ACTION_SCREEN_ON);
-                registerReceiver(screenOnBroadcastReceiver, intentFilter);
-                Log.d("Feature Log", "Screen On Message Box Turned On!");
-            }
-        }
-
         //Turn on startup app feature
         if (featureState.containsKey(STARTUP_APPLICATION_FEATURE_ID)) {
             state = featureState.get(STARTUP_APPLICATION_FEATURE_ID);
+            Log.d("Feature Log", "startup app: " + state);
             if (state) {
 
                 IntentFilter intentFilter = new IntentFilter();
@@ -252,67 +196,24 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("Feature Log", "Startup App Turned On!");
             }
         }
+
+        //turn on service to start features
+        Intent serviceIntent = new Intent(getBaseContext(), BackgroundRunningService.class);
+        Bundle bundle = convertFeatureStateMapToBundle();
+        serviceIntent.putExtras(bundle);
+        startService(serviceIntent);
+        ContextCompat.startForegroundService(this, serviceIntent);
+        Log.d("Feature Log", "Running in background turned on!");
     }
 
     private void stopTurnedOffFeature() {
         boolean state;
         boolean canBackgroundRunning = false;
 
-        //Turn off running in background
-        if (featureState.containsKey(RUNNING_IN_BACKGROUND_FEATURE_ID)) {
-            canBackgroundRunning = featureState.get(RUNNING_IN_BACKGROUND_FEATURE_ID);
-            Log.d("Feature Log", "Running in background: " + canBackgroundRunning);
-            if (!canBackgroundRunning) {
-                Intent serviceIntent = new Intent(this, BackgroundRunningService.class);
-                stopService(serviceIntent);
-            }
-        }
-
-        //Turn off broadcast receiver when new package added
-        if (featureState.containsKey(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID)) {
-            state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
-            if (!(state && canBackgroundRunning)) {
-                try {
-                    unregisterReceiver(newPackageReceiver);
-                    Log.d("Feature Log", "New package added Turned Off!");
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        //Turn off Log writing service and broadcast receiver
-        if (featureState.containsKey(LOG_WRITING_FEATURE_ID)) {
-            state = featureState.get(LOG_WRITING_FEATURE_ID);
-            if (!(state && canBackgroundRunning)) {
-                try {
-                    LocalBroadcastManager.getInstance(this).unregisterReceiver(logNotificationBroadcastReceiver);
-
-                    Intent serviceIntent = new Intent(this, LogWritingService.class);
-                    stopService(serviceIntent);
-                    Log.d("Feature Log", "Log writing Turned Off!");
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        //Turn off screen on broadcast receiver
-        if (featureState.containsKey(SCREEN_ON_NOTIFICATION_FEATURE_ID)) {
-            state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
-            if (!(state && canBackgroundRunning)) {
-                try {
-                    unregisterReceiver(screenOnBroadcastReceiver);
-                    Log.d("Feature Log", "Screen on Turned Off!");
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
         //Turn off startup app feature
         if (featureState.containsKey(STARTUP_APPLICATION_FEATURE_ID)) {
             state = featureState.get(STARTUP_APPLICATION_FEATURE_ID);
+            Log.d("Feature Log", "startup app: " + state);
             if (!state) {
                 try {
                     unregisterReceiver(bootCompletedReceiver);
@@ -322,8 +223,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+
+        //If running in background is turned off, stop all service
+        if (featureState.containsKey(RUNNING_IN_BACKGROUND_FEATURE_ID)) {
+            canBackgroundRunning = featureState.get(RUNNING_IN_BACKGROUND_FEATURE_ID);
+            Log.d("Feature Log", "Running in background: " + canBackgroundRunning);
+            if (!canBackgroundRunning) {
+                Log.d("Feature Log", "Running in background turned off!");
+                Intent serviceIntent = new Intent(getBaseContext(), BackgroundRunningService.class);
+                stopService(serviceIntent);
+            }
+        }
+
+
     }
 
+    private Bundle convertFeatureStateMapToBundle() {
+        Bundle bundle = new Bundle();
+        boolean state;
+
+        state = featureState.get(SCREEN_ON_NOTIFICATION_FEATURE_ID);
+        bundle.putBoolean(SCREEN_ON_NOTIFICATION_FEATURE_ID, state);
+
+        state = featureState.get(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID);
+        bundle.putBoolean(PACKAGE_INSTALL_NOTIFICATION_FEATURE_ID,state);
+
+        state = featureState.get(LOG_WRITING_FEATURE_ID);
+        bundle.putBoolean(LOG_WRITING_FEATURE_ID,state);
+
+        return bundle;
+    }
 
     //This method will require System's draw on app permission
     //It is necessary for device running on api 29+ to start activity from a broadcast receiver when boot
